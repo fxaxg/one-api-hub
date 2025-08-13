@@ -1,28 +1,26 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["!./node_modules", "./**/*.{js,ts,jsx,tsx}"],
   theme: {
-    extend: {},
+    extend: {}
   },
   plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'),
-    function({ addUtilities }) {
+    require("@tailwindcss/forms"),
+    require("@tailwindcss/typography"),
+    function ({ addUtilities }) {
       const newUtilities = {
-        '.scrollbar-hide': {
+        ".scrollbar-hide": {
           /* IE and Edge */
-          '-ms-overflow-style': 'none',
+          "-ms-overflow-style": "none",
           /* Firefox */
-          'scrollbar-width': 'none',
+          "scrollbar-width": "none",
           /* Safari and Chrome */
-          '&::-webkit-scrollbar': {
-            display: 'none'
+          "&::-webkit-scrollbar": {
+            display: "none"
           }
         }
       }
       addUtilities(newUtilities)
     }
-  ],
+  ]
 }
