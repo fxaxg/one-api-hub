@@ -22,7 +22,8 @@
 
 目前市面上有太多 AI-API 中转站点，每次查看余额和支持模型列表等信息都非常麻烦，需要逐个登录查看。
 
-本插件可以便捷的对基于 [one-api](https://github.com/songquanpeng/one-api) 和 [new-api](https://github.com/QuantumNous/new-api) 等部署的 AI 中转站账号进行整合管理。
+本插件可以便捷的对基于 [one-api](https://github.com/songquanpeng/one-api) 、 [new-api](https://github.com/QuantumNous/new-api)
+和 [Veloera](https://github.com/Veloera/Veloera) 等部署的 AI 中转站账号进行整合管理。
 
 ## ✨ 功能特性
 
