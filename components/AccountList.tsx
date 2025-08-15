@@ -181,7 +181,15 @@ export default function AccountList({
                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
                     HEALTH_STATUS_MAP[site.healthStatus]?.color || UI_CONSTANTS.STYLES.STATUS_INDICATOR.UNKNOWN
                   }`}></div>
-                  <div className="font-medium text-gray-900 text-sm truncate">{site.name}</div>
+                  <div className="font-medium text-gray-900 text-sm truncate">
+                    <a
+                      href={site.baseUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {site.name}
+                    </a>
+                  </div>
                 </div>
                 <div className="text-xs text-gray-500 truncate ml-4">{site.username}</div>
               </div>
