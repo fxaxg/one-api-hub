@@ -1,7 +1,7 @@
 {
   "name": "one-api-hub",
   "displayName": "中转站管理器 - One API Hub",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "一站式聚合管理所有AI中转站账号的余额、模型和密钥，告别繁琐登录。",
   "author": "Plasmo Corp. <foss@plasmo.com>",
   "scripts": {
