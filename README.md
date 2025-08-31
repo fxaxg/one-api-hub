@@ -26,6 +26,7 @@
 - [one-api](https://github.com/songquanpeng/one-api)
 - [new-api](https://github.com/QuantumNous/new-api) 
 - [Veloera](https://github.com/Veloera/Veloera)
+- [VoAPI](https://github.com/VoAPI/VoAPI)
 
 
 
