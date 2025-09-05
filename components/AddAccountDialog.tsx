@@ -1,17 +1,50 @@
-import { useState, useEffect, Fragment } from "react"
-import toast from 'react-hot-toast'
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from "@headlessui/react"
-import { GlobeAltIcon, XMarkIcon, SparklesIcon, UserIcon, KeyIcon, EyeIcon, EyeSlashIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline"
-import { autoDetectAccount, validateAndSaveAccount, extractDomainPrefix, isValidExchangeRate } from "../services/accountOperations"
-import AutoDetectErrorAlert from "./AutoDetectErrorAlert"
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Transition,
+  TransitionChild
+} from "@headlessui/react"
+import {
+  CurrencyDollarIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  GlobeAltIcon,
+  InformationCircleIcon,
+  KeyIcon,
+  PencilIcon,
+  SparklesIcon,
+  UserIcon,
+  XMarkIcon
+} from "@heroicons/react/24/outline"
+import { Fragment, useEffect, useState } from "react"
+import toast from "react-hot-toast"
+
+import {
+  autoDetectAccount,
+  extractDomainPrefix,
+  isValidExchangeRate,
+  validateAndSaveAccount
+} from "../services/accountOperations"
+import type { DisplaySiteData } from "../types"
 import type { AutoDetectError } from "../utils/autoDetectUtils"
+import AutoDetectErrorAlert from "./AutoDetectErrorAlert"
 
 interface AddAccountDialogProps {
   isOpen: boolean
   onClose: () => void
+  isCurrentSiteAdded?: boolean
+  onEditAccount?: (account: DisplaySiteData) => void
+  detectedAccount?: DisplaySiteData | null
 }
 
-export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogProps) {
+export default function AddAccountDialog({
+  isOpen,
+  onClose,
+  isCurrentSiteAdded,
+  onEditAccount,
+  detectedAccount
+}: AddAccountDialogProps) {
   const [url, setUrl] = useState("")
   const [isDetecting, setIsDetecting] = useState(false)
   const [siteName, setSiteName] = useState("")
@@ -21,11 +54,12 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
   const [isDetected, setIsDetected] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [showAccessToken, setShowAccessToken] = useState(false)
-  const [detectionError, setDetectionError] = useState<AutoDetectError | null>(null)
+  const [detectionError, setDetectionError] = useState<AutoDetectError | null>(
+    null
+  )
   const [showManualForm, setShowManualForm] = useState(false)
   const [exchangeRate, setExchangeRate] = useState("")
   const [currentTabUrl, setCurrentTabUrl] = useState<string | null>(null)
-
 
   useEffect(() => {
     if (isOpen) {
@@ -41,7 +75,7 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
       setExchangeRate("")
       setCurrentTabUrl(null)
       setUrl("")
-      
+
       // 获取当前标签页的 URL 作为初始参考
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]?.url) {
@@ -49,7 +83,7 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
             const urlObj = new URL(tabs[0].url)
             const baseUrl = `${urlObj.protocol}//${urlObj.host}`
             // 如果站点不是以http开头，则不处理（可能为空白页）
-            if (!baseUrl.startsWith('http')) {
+            if (!baseUrl.startsWith("http")) {
               return
             }
             setCurrentTabUrl(baseUrl)
@@ -57,7 +91,7 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
             const domainPrefix = extractDomainPrefix(urlObj.hostname)
             setSiteName(domainPrefix)
           } catch (error) {
-            console.log('无法解析 URL:', error)
+            console.log("无法解析 URL:", error)
             setCurrentTabUrl(null)
             setSiteName("")
           }
@@ -80,10 +114,10 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
 
     setIsDetecting(true)
     setDetectionError(null)
-    
+
     try {
       const result = await autoDetectAccount(url.trim())
-      
+
       if (!result.success) {
         setDetectionError(result.detailedError || null)
         setShowManualForm(true)
@@ -95,32 +129,32 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
         setUsername(result.data.username)
         setAccessToken(result.data.accessToken)
         setUserId(result.data.userId)
-        
+
         // 设置充值比例默认值
         if (result.data.exchangeRate) {
           setExchangeRate(result.data.exchangeRate.toString())
-          console.log('获取到默认充值比例:', result.data.exchangeRate)
+          console.log("获取到默认充值比例:", result.data.exchangeRate)
         } else {
           setExchangeRate("") // 如果没有获取到，设置为空
-          console.log('未获取到默认充值比例，设置为空')
+          console.log("未获取到默认充值比例，设置为空")
         }
-        
+
         setIsDetected(true)
-        
-        console.log('自动识别成功:', { 
-          username: result.data.username, 
-          siteName, 
-          exchangeRate: result.data.exchangeRate 
+
+        console.log("自动识别成功:", {
+          username: result.data.username,
+          siteName,
+          exchangeRate: result.data.exchangeRate
         })
       }
     } catch (error) {
-      console.error('自动识别失败:', error)
-      const errorMessage = error instanceof Error ? error.message : '未知错误'
+      console.error("自动识别失败:", error)
+      const errorMessage = error instanceof Error ? error.message : "未知错误"
       // 使用通用错误处理
       setDetectionError({
-        type: 'unknown' as any,
+        type: "unknown" as any,
         message: `自动识别失败: ${errorMessage}`,
-        helpDocUrl: '#'
+        helpDocUrl: "#"
       })
       setShowManualForm(true) // 识别失败后显示手动表单
     } finally {
@@ -128,10 +162,9 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
     }
   }
 
-
   const handleSaveAccount = async () => {
     setIsSaving(true)
-    
+
     try {
       await toast.promise(
         validateAndSaveAccount(
@@ -143,23 +176,23 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
           exchangeRate
         ),
         {
-          loading: '正在添加账号...',
+          loading: "正在添加账号...",
           success: (result) => {
             if (result.success) {
               onClose()
               return `账号 ${siteName} 添加成功!`
             } else {
-              throw new Error(result.error || '保存失败')
+              throw new Error(result.error || "保存失败")
             }
           },
           error: (err) => {
-            const errorMsg = err.message || '添加失败'
+            const errorMsg = err.message || "添加失败"
             return `添加失败: ${errorMsg}`
-          },
+          }
         }
       )
     } catch (error) {
-      console.error('保存账号失败:', error)
+      console.error("保存账号失败:", error)
     } finally {
       setIsSaving(false)
     }
@@ -176,10 +209,7 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
 
   return (
     <Transition show={isOpen} as={Fragment}>
-      <Dialog
-        onClose={onClose}
-        className="relative z-50"
-      >
+      <Dialog onClose={onClose} className="relative z-50">
         {/* 背景遮罩动画 */}
         <TransitionChild
           as={Fragment}
@@ -188,11 +218,13 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
           enterTo="opacity-100"
           leave="ease-in duration-200"
           leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
+          leaveTo="opacity-0">
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+            aria-hidden="true"
+          />
         </TransitionChild>
-        
+
         {/* 居中容器 - 针对插件优化 */}
         <div className="fixed inset-0 flex items-center justify-center p-2">
           {/* 弹窗面板动画 */}
@@ -203,8 +235,7 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
             enterTo="opacity-100 scale-100 translate-y-0"
             leave="ease-in duration-200"
             leaveFrom="opacity-100 scale-100 translate-y-0"
-            leaveTo="opacity-0 scale-95 translate-y-4"
-          >
+            leaveTo="opacity-0 scale-95 translate-y-4">
             <DialogPanel className="w-full max-w-sm bg-white rounded-lg shadow-xl transform transition-all max-h-[90vh] overflow-y-auto">
               {/* 头部 */}
               <div className="flex items-center justify-between p-4 border-b border-gray-100">
@@ -218,8 +249,7 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                >
+                  className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
@@ -229,7 +259,7 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* 识别错误提示 */}
                   {detectionError && (
-                    <AutoDetectErrorAlert 
+                    <AutoDetectErrorAlert
                       error={detectionError}
                       siteUrl={url}
                     />
@@ -249,7 +279,7 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                         value={url}
                         onChange={(e) => {
                           const inputUrl = e.target.value
-                          
+
                           // 当用户输入 URL 时，提取协议和主机部分
                           if (inputUrl.trim()) {
                             try {
@@ -257,16 +287,20 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                               // 只保留协议和主机部分，不带路径
                               const baseUrl = `${urlObj.protocol}//${urlObj.host}`
                               setUrl(baseUrl)
-                              
+
                               // 自动更新站点名称
-                              const domainPrefix = extractDomainPrefix(urlObj.hostname)
+                              const domainPrefix = extractDomainPrefix(
+                                urlObj.hostname
+                              )
                               setSiteName(domainPrefix)
                             } catch (error) {
                               // 如果 URL 格式不完整，先保存用户输入，但尝试提取域名
                               setUrl(inputUrl)
                               const match = inputUrl.match(/\/\/([^\/]+)/)
                               if (match) {
-                                const domainPrefix = extractDomainPrefix(match[1])
+                                const domainPrefix = extractDomainPrefix(
+                                  match[1]
+                                )
                                 setSiteName(domainPrefix)
                               }
                             }
@@ -283,10 +317,9 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                       {url && (
                         <button
                           type="button"
-                          onClick={() => setUrl('')}
+                          onClick={() => setUrl("")}
                           className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
-                          disabled={isDetected}
-                        >
+                          disabled={isDetected}>
                           <XMarkIcon className="h-4 w-4" />
                         </button>
                       )}
@@ -294,11 +327,37 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                     <p className="mt-2 text-xs text-gray-500">
                       请输入 One API 或 New API 站点的完整地址
                     </p>
-                    {/* 当前标签页 URL 提示 */}
+
+                    {/* 已添加提示 */}
                     <Transition
-                      show={!!(currentTabUrl && !url)}
-                      as={Fragment}
-                    >
+                      show={isCurrentSiteAdded && !!currentTabUrl && !url}
+                      as={Fragment}>
+                      <TransitionChild
+                        as="div"
+                        enter="ease-out duration-300 delay-200"
+                        enterFrom="opacity-0 translate-y-2"
+                        enterTo="opacity-100 translate-y-0"
+                        className="mt-2">
+                        <div className="flex items-center justify-between text-xs text-yellow-700 bg-yellow-50 p-2 rounded-md">
+                          <div className="flex items-center">
+                            <InformationCircleIcon className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                            <span>当前站点已添加</span>
+                          </div>
+                          {onEditAccount && detectedAccount && (
+                            <button
+                              type="button"
+                              onClick={() => onEditAccount(detectedAccount)}
+                              className="flex items-center font-medium text-yellow-800 hover:text-yellow-900">
+                              <PencilIcon className="w-3 h-3 mr-1" />
+                              <span>立即编辑</span>
+                            </button>
+                          )}
+                        </div>
+                      </TransitionChild>
+                    </Transition>
+
+                    {/* 当前标签页 URL 提示 */}
+                    <Transition show={!!(currentTabUrl && !url)} as={Fragment}>
                       <TransitionChild
                         as="div"
                         enter="ease-out duration-500 delay-500"
@@ -307,20 +366,20 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                         leave="ease-in duration-200"
                         leaveFrom="opacity-100 translate-y-0 scale-100"
                         leaveTo="opacity-0 translate-y-2 scale-95"
-                        className="mt-2"
-                      >
+                        className="mt-2">
                         <button
                           type="button"
                           onClick={handleUseCurrentTabUrl}
-                          className="inline-flex items-center px-3 py-1.5 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
-                        >
+                          className="inline-flex items-center px-3 py-1.5 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-md">
                           <GlobeAltIcon className="w-3 h-3 mr-1.5 animate-pulse" />
-                          <span>使用当前: {currentTabUrl && new URL(currentTabUrl).host}</span>
+                          <span>
+                            使用当前:{" "}
+                            {currentTabUrl && new URL(currentTabUrl).host}
+                          </span>
                         </button>
                       </TransitionChild>
                     </Transition>
                   </div>
-
 
                   {/* 识别成功后的表单或手动添加表单 */}
                   {(isDetected || showManualForm) && (
@@ -372,7 +431,9 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                         </label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span className="text-gray-400 font-mono text-sm">#</span>
+                            <span className="text-gray-400 font-mono text-sm">
+                              #
+                            </span>
                           </div>
                           <input
                             type="number"
@@ -405,8 +466,7 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                           <button
                             type="button"
                             onClick={() => setShowAccessToken(!showAccessToken)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
-                          >
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
                             {showAccessToken ? (
                               <EyeSlashIcon className="h-4 w-4" />
                             ) : (
@@ -434,9 +494,9 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                             onChange={(e) => setExchangeRate(e.target.value)}
                             placeholder="请输入充值比例"
                             className={`block w-full pl-10 py-3 border rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors ${
-                              isValidExchangeRate(exchangeRate) 
-                                ? 'border-gray-200 focus:ring-blue-500 focus:border-transparent' 
-                                : 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                              isValidExchangeRate(exchangeRate)
+                                ? "border-gray-200 focus:ring-blue-500 focus:border-transparent"
+                                : "border-red-300 focus:ring-red-500 focus:border-red-500"
                             }`}
                             required
                           />
@@ -445,7 +505,8 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                           </div>
                         </div>
                         <p className="mt-1 text-xs text-gray-500">
-                          表示充值 1 美元需要多少人民币。系统会尝试自动获取，如未获取到请手动填写
+                          表示充值 1
+                          美元需要多少人民币。系统会尝试自动获取，如未获取到请手动填写
                         </p>
                         {!isValidExchangeRate(exchangeRate) && exchangeRate && (
                           <p className="mt-1 text-xs text-red-600">
@@ -461,16 +522,21 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                     <button
                       type="button"
                       onClick={onClose}
-                      className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
-                    >
+                      className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500">
                       取消
                     </button>
                     {isDetected ? (
                       <button
                         type="submit"
-                        disabled={!siteName.trim() || !username.trim() || !accessToken.trim() || !userId.trim() || !isValidExchangeRate(exchangeRate) || isSaving}
-                        className="flex-1 flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                      >
+                        disabled={
+                          !siteName.trim() ||
+                          !username.trim() ||
+                          !accessToken.trim() ||
+                          !userId.trim() ||
+                          !isValidExchangeRate(exchangeRate) ||
+                          isSaving
+                        }
+                        className="flex-1 flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                         {isSaving ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -486,9 +552,15 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                     ) : showManualForm ? (
                       <button
                         type="submit"
-                        disabled={!siteName.trim() || !username.trim() || !accessToken.trim() || !userId.trim() || !isValidExchangeRate(exchangeRate) || isSaving}
-                        className="flex-1 flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                      >
+                        disabled={
+                          !siteName.trim() ||
+                          !username.trim() ||
+                          !accessToken.trim() ||
+                          !userId.trim() ||
+                          !isValidExchangeRate(exchangeRate) ||
+                          isSaving
+                        }
+                        className="flex-1 flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                         {isSaving ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -505,8 +577,7 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                       <button
                         type="submit"
                         disabled={!url.trim() || isDetecting}
-                        className="flex-1 flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                      >
+                        className="flex-1 flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                         {isDetecting ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -521,15 +592,14 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                       </button>
                     )}
                   </div>
-                  
+
                   {/* 手动添加按钮 - 在自动识别失败后显示 */}
                   {!isDetected && !showManualForm && detectionError && (
                     <div className="pt-2">
                       <button
                         type="button"
                         onClick={() => setShowManualForm(true)}
-                        className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
-                      >
+                        className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500">
                         <UserIcon className="w-4 h-4" />
                         <span>手动添加账号信息</span>
                       </button>
@@ -547,16 +617,19 @@ export default function AddAccountDialog({ isOpen, onClose }: AddAccountDialogPr
                     </div>
                     <div className="ml-3">
                       <h3 className="text-xs font-medium text-blue-800">
-                        {isDetected ? '账号信息确认' : showManualForm ? '手动添加' : '自动识别'}
+                        {isDetected
+                          ? "账号信息确认"
+                          : showManualForm
+                            ? "手动添加"
+                            : "自动识别"}
                       </h3>
                       <div className="mt-1 text-xs text-blue-700">
                         <p>
-                          {isDetected 
+                          {isDetected
                             ? '请确认账号信息无误后点击"确认添加"按钮。'
                             : showManualForm
-                            ? '请手动填写账号信息。账号将被安全地保存在本地存储中。'
-                            : '请先在目标站点进行登录，插件将自动检测站点类型，并自动获取访问令牌。'
-                          }
+                              ? "请手动填写账号信息。账号将被安全地保存在本地存储中。"
+                              : "请先在目标站点进行登录，插件将自动检测站点类型，并自动获取访问令牌。"}
                         </p>
                       </div>
                     </div>

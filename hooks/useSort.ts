@@ -18,7 +18,8 @@ export const useSort = (
   currencyType: 'USD' | 'CNY',
   initialSortField?: SortField,
   initialSortOrder?: SortOrder,
-  onSortChange?: (field: SortField, order: SortOrder) => void
+  onSortChange?: (field: SortField, order: SortOrder) => void,
+  pinnedAccountId?: string | null
 ): UseSortResult => {
   const [sortField, setSortField] = useState<SortField>(
     initialSortField || UI_CONSTANTS.SORT.DEFAULT_FIELD
@@ -60,6 +61,12 @@ export const useSort = (
   // 排序数据
   const sortedData = useMemo(() => {
     return [...data].sort((a, b) => {
+      // 置顶逻辑
+      if (pinnedAccountId) {
+        if (a.id === pinnedAccountId && b.id !== pinnedAccountId) return -1;
+        if (a.id !== pinnedAccountId && b.id === pinnedAccountId) return 1;
+      }
+
       let aValue: string | number, bValue: string | number
       
       switch (sortField) {
@@ -85,7 +92,7 @@ export const useSort = (
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
       }
     })
-  }, [data, sortField, sortOrder, currencyType])
+  }, [data, sortField, sortOrder, currencyType, pinnedAccountId])
 
   return {
     sortField,

@@ -57,6 +57,29 @@ class AccountStorageService {
   }
 
   /**
+   * 检查给定 URL 是否已存在
+   */
+  async checkUrlExists(url: string): Promise<SiteAccount | null> {
+    if (!url) return null;
+    try {
+      const currentUrl = new URL(url);
+      const accounts = await this.getAllAccounts();
+      
+      return accounts.find(account => {
+        try {
+          const accountUrl = new URL(account.site_url);
+          return accountUrl.origin === currentUrl.origin;
+        } catch {
+          return false;
+        }
+      }) || null;
+    } catch (error) {
+      console.error('检查 URL 是否存在时出错:', error);
+      return null;
+    }
+  }
+
+  /**
    * 添加新账号
    */
   async addAccount(accountData: Omit<SiteAccount, 'id' | 'created_at' | 'updated_at'>): Promise<string> {
